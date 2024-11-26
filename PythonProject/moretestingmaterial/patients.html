@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        nav a {
+            margin: 10px;
+            text-decoration: none;
+            color: blue.
+        }
+    </style>
+</head>
+<body>
+    <h1>Patient Management</h1>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="employees.html">Employee Management</a>
+    </nav>
+
+    <h2>Register Patient</h2>
+    <form id="patientForm">
+        <label for="nid">NID:</label>
+        <input type="number" id="nid" required><br><br>
+        <label for="patient_name">Name:</label>
+        <input type="text" id="patient_name" required><br><br>
+        <label for="dob">Date of Birth:</label>
+        <input type="date" id="dob" required><br><br>
+        <label for="medical_records">Medical Records:</label>
+        <textarea id="medical_records" required></textarea><br><br>
+        <button type="submit">Register Patient</button>
+    </form>
+
+    <h2>Search Patient</h2>
+    <form id="searchPatientForm">
+        <label for="search_name">Name:</label>
+        <input type="text" id="search_name"><br><br>
+        <label for="search_nid">NID:</label>
+        <input type="number" id="search_nid"><br><br>
+        <button type="submit">Search</button>
+    </form>
+    <table id="patientTable">
+        <thead>
+            <tr>
+                <th>NID</th>
+                <th>Name</th>
+                <th>Date of Birth</th>
+                <th>Medical Records</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <h2>Book an Appointment</h2>
+    <form id="appointmentForm">
+        <label for="patient_id">Patient ID:</label>
+        <input type="number" id="patient_id" required><br><br>
+        <label for="department_specialty">Department Specialty:</label>
+        <input type="text" id="department_specialty" required><br><br>
+        <label for="appointment_date">Appointment Date:</label>
+        <input type="datetime-local" id="appointment_date" required><br><br>
+        <label for="reason">Reason:</label>
+        <textarea id="reason" required></textarea><br><br>
+        <button type="submit">Book Appointment</button>
+    </form>
+
+    <script>
+        document.getElementById('patientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPatient = {
+                NID: document.getElementById('nid').value,
+                name: document.getElementById('patient_name').value,
+                dob: document.getElementById('dob').value,
+                medical_records: document.getElementById('medical_records').value
+            };
+
+            await fetch('http://127.0.0.1:5000/add_patient', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newPatient)
+            });
+            alert('Patient registered successfully!');
+            document.getElementById('patientForm').reset();
+        });
+
+        document.getElementById('searchPatientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('search_name').value;
+            const nid = document.getElementById('search_nid').value;
+            let query = 'http://127.0.0.1:5000/search_patient?';
+            if (name) query += `name=${name}&`;
+            if (nid) query += `nid=${nid}`;
+            const response = await fetch(query);
+            const patients = await response.json();
+            const tableBody = document.querySelector('#patientTable tbody');
+            tableBody.innerHTML = '';
+            patients.forEach(patient => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${patient.nid}</td>
+                    <td>${patient.name}</td>
+                    <td>${patient.dob}</td>
+                    <td>${patient.medical_records}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        });
+
+        document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newAppointment = {
+                Patient_NID: document.getElementById('patient_id').value,
+                Department_Specialty: document.getElementById('department_specialty').value,
+                AppointmentDate: document.getElementById('appointment_date').value,
+                Reason: document.getElementById('reason').value
+            };
+
+            await fetch('http://127.0.0.1:5000/book_appointment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newAppointment)
+            });
+            alert('Appointment booked successfully!');
+            document.getElementById('appointmentForm').reset();
+        });
+    </script>
+</body>
+</html>
